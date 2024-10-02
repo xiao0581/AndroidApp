@@ -42,9 +42,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.obopgave.Screen.BeerAdd
+import com.example.obopgave.Screen.BeerDetails
 import com.example.obopgave.Screen.BeerListScreen
 import com.example.obopgave.Screen.UserbeerScreen
 import com.example.obopgave.ViewModel.Beer
@@ -66,19 +70,42 @@ class MainActivity : ComponentActivity() {
     fun MainScreen(modifier: Modifier = Modifier) {
         val navController = rememberNavController()
         val viewModel: BeerViewModel = viewModel() // persistence
-        val Beers = viewModel.BeersFlow.value
+        val beers = viewModel.BeersFlow.value
         val errorMessage = viewModel.errorMessageFlow.value
 
         NavHost(navController = navController, startDestination = NavRouters.BeerListScreen.route) {
             composable(NavRouters.BeerListScreen.route) {
                 BeerListScreen(
-                    Beers = Beers,
+                    beers = beers,
                     errorMessage = errorMessage,
                     modifier = modifier,
-                    onBeerSelected = { beer -> navController.navigate(NavRouters.UserPageScreen.route) },
+
+                    onBeerSelected =
+                    { Beer -> navController.navigate(NavRouters.BeerDetails.route + "/${Beer.id}") },
                     onBeerDeleted = { beer -> viewModel.remove(beer) },
-                    onAdd = { navController.navigate(NavRouters.UserPageScreen.route) }
+
+                    onAdd = { navController.navigate(NavRouters.BeerAdd.route) },
+                    sortByName = { viewModel.sortBooksByName(ascending = it) },
+                    sortByAbv = { viewModel.sortBooksByAbv(ascending = it) },
+                    filterByName = { viewModel.filterByName(it) }
+
                 )
+            }
+            composable(
+                NavRouters.BeerDetails.route + "/{BeerId}",
+                arguments = listOf(navArgument("BeerId") { type = NavType.IntType })
+            ) { backstackEntry ->
+                val BeerId = backstackEntry.arguments?.getInt("BeerId")
+                val Beer = beers.find { it.id == BeerId } ?: Beer("",0.0)
+                BeerDetails(modifier = modifier,
+                    Beer = Beer,
+                    onUpdate = { id: Int, Beer: Beer -> viewModel.update(id, Beer) },
+                    onNavigateBack = { navController.popBackStack() })
+            }
+            composable(NavRouters.BeerAdd.route) {
+                BeerAdd(modifier = modifier,
+                    addBeer = { Beer -> viewModel.add(Beer) },
+                    navigateBack = { navController.popBackStack() })
             }
         }
     }

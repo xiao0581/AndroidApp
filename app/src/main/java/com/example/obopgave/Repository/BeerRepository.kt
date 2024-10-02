@@ -126,6 +126,31 @@ class BeerRepository {
             }
         })
     }
+    fun sortBooksByName(ascending: Boolean) {
+        Log.d("APPLE", "Sort by name")
+        if (ascending)
+            BeersFlow.value = BeersFlow.value.sortedBy { it.name }
+        else
+            BeersFlow.value = BeersFlow.value.sortedByDescending { it.name }
+    }
 
+    fun sortBooksByAbv(ascending: Boolean) {
+        Log.d("APPLE", "Sort by abv")
+        if (ascending)
+            BeersFlow.value = BeersFlow.value.sortedBy { it.abv }
+        else
+            BeersFlow.value = BeersFlow.value.sortedByDescending { it.abv }
+    }
+
+    fun filterByTName(nameFragment: String) {
+        if (nameFragment.isEmpty()) {
+            getBeers()
+            return
+        }
+        BeersFlow.value =
+            BeersFlow.value.filter {
+                it.name.contains(nameFragment, ignoreCase = true)
+            }
+    }
 
     }

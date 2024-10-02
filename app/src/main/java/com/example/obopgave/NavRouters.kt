@@ -7,5 +7,8 @@ sealed class NavRouters (val route: String) {
     data object RegisterScreen : NavRouters("registerScreen")
     data object BeerListScreen : NavRouters("beerListScreen")
     data object UserPageScreen : NavRouters("userPageScreen")
+    data object BeerDetails : NavRouters("beerDetails")
+    data object BeerAdd : NavRouters("beerAdd")
+
 
 }

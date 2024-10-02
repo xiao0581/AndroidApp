@@ -32,4 +32,15 @@ class BeerViewModel:ViewModel() {
 
 
     }
+    fun sortBooksByName(ascending: Boolean) {
+        repository.sortBooksByName(ascending)
+    }
+
+    fun sortBooksByAbv(ascending: Boolean) {
+        repository.sortBooksByAbv(ascending)
+    }
+
+    fun filterByName(titleFragment: String) {
+        repository.filterByTName(titleFragment)
+    }
 }

@@ -64,8 +64,8 @@ import com.example.obopgave.ui.theme.ObopgaveTheme
             Column {
                 OutlinedTextField(value = "", onValueChange = { /*TODO*/ }, label = { Text("Username") },shape = RoundedCornerShape(10.dp),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color.Green, // 聚焦时的边框颜色
-                        unfocusedBorderColor = Color.Red // 未聚焦时的边框颜色
+                        focusedBorderColor = Color.Green,
+                        unfocusedBorderColor = Color.Red
                     ))
                 OutlinedTextField(value = "", onValueChange = { /*TODO*/ }, label = { Text("Password") },shape = RoundedCornerShape(10.dp)
                 )
