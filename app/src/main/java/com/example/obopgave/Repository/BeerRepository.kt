@@ -13,24 +13,23 @@ import retrofit2.converter.gson.GsonConverterFactory
 class BeerRepository {
 
     private val baseUrl = "https://anbo-restbeer.azurewebsites.net/api/"
-    // the specific (collection) part of the URL is on the individual methods in the interface beerService
-
     private val beerService: BeerService
     val BeersFlow: MutableState<List<Beer>> = mutableStateOf(listOf())
     val isLoadingBeers = mutableStateOf(false)
     val errorMessageFlow = mutableStateOf("")
 
+
+    private var originalBeers: List<Beer> = listOf()
+
     init {
-        //val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
         val build: Retrofit = Retrofit.Builder()
             .baseUrl(baseUrl)
-            .addConverterFactory(GsonConverterFactory.create()) // GSON
-            //.addConverterFactory(KotlinJsonAdapterFactory)
-            //.addConverterFactory(MoshiConverterFactory.create(moshi)) // Moshi, added to Gradle dependencies
+            .addConverterFactory(GsonConverterFactory.create())
             .build()
         beerService = build.create(BeerService::class.java)
         getBeers()
     }
+
 
     fun getBeers() {
         isLoadingBeers.value = true
@@ -38,14 +37,14 @@ class BeerRepository {
             override fun onResponse(call: Call<List<Beer>>, response: Response<List<Beer>>) {
                 isLoadingBeers.value = false
                 if (response.isSuccessful) {
-                    //Log.d("APPLE", response.body().toString())
                     val beerList: List<Beer>? = response.body()
-                    BeersFlow.value = beerList ?: emptyList()
+                    originalBeers = beerList ?: emptyList()
+                    BeersFlow.value = originalBeers
                     errorMessageFlow.value = ""
                 } else {
                     val message = response.code().toString() + " " + response.message()
                     errorMessageFlow.value = message
-                    Log.d("APPLE", message)
+
                 }
             }
 
@@ -53,7 +52,7 @@ class BeerRepository {
                 isLoadingBeers.value = false
                 val message = t.message ?: "No connection to back-end"
                 errorMessageFlow.value = message
-                Log.d("APPLE", message)
+
             }
         })
     }
@@ -62,20 +61,20 @@ class BeerRepository {
         beerService.saveBeer(Beer).enqueue(object : Callback<Beer> {
             override fun onResponse(call: Call<Beer>, response: Response<Beer>) {
                 if (response.isSuccessful) {
-                    Log.d("APPLE", "Added: " + response.body())
-                    getBeers()
+
+                    getBeers()  // 添加后重新获取所有数据
                     errorMessageFlow.value = ""
                 } else {
                     val message = response.code().toString() + " " + response.message()
                     errorMessageFlow.value = message
-                    Log.d("APPLE", message)
+
                 }
             }
 
             override fun onFailure(call: Call<Beer>, t: Throwable) {
                 val message = t.message ?: "No connection to back-end"
                 errorMessageFlow.value = message
-                Log.d("APPLE", message)
+
             }
         })
     }
@@ -85,13 +84,13 @@ class BeerRepository {
         beerService.deleteBeer(id).enqueue(object : Callback<Beer> {
             override fun onResponse(call: Call<Beer>, response: Response<Beer>) {
                 if (response.isSuccessful) {
-                    Log.d("APPLE", "Delete: " + response.body())
+
                     errorMessageFlow.value = ""
-                    getBeers()
+                    getBeers()  // 删除后重新获取所有数据
                 } else {
                     val message = response.code().toString() + " " + response.message()
                     errorMessageFlow.value = message
-                    Log.d("APPLE", "Not deleted: $message")
+
                 }
             }
 
@@ -108,49 +107,65 @@ class BeerRepository {
         beerService.updateBeers(BeerId, Beer).enqueue(object : Callback<Beer> {
             override fun onResponse(call: Call<Beer>, response: Response<Beer>) {
                 if (response.isSuccessful) {
-                    Log.d("APPLE", "Updated: " + response.body())
+
                     errorMessageFlow.value = ""
-                    Log.d("APPLE", "update successful")
-                    getBeers()
+                    getBeers()  // 更新后重新获取所有数据
                 } else {
                     val message = response.code().toString() + " " + response.message()
                     errorMessageFlow.value = message
-                    Log.d("APPLE", "Update $message")
+
                 }
             }
 
             override fun onFailure(call: Call<Beer>, t: Throwable) {
                 val message = t.message ?: "No connection to back-end"
                 errorMessageFlow.value = message
-                Log.d("APPLE", "Update $message")
+
             }
         })
     }
+
+    // 使用原始数据进行排序
     fun sortBooksByName(ascending: Boolean) {
-        Log.d("APPLE", "Sort by name")
-        if (ascending)
-            BeersFlow.value = BeersFlow.value.sortedBy { it.name }
-        else
-            BeersFlow.value = BeersFlow.value.sortedByDescending { it.name }
+
+        BeersFlow.value = if (ascending) {
+            originalBeers.sortedBy { it.name }
+        } else {
+            originalBeers.sortedByDescending { it.name }
+        }
     }
 
     fun sortBooksByAbv(ascending: Boolean) {
-        Log.d("APPLE", "Sort by abv")
-        if (ascending)
-            BeersFlow.value = BeersFlow.value.sortedBy { it.abv }
-        else
-            BeersFlow.value = BeersFlow.value.sortedByDescending { it.abv }
+
+        BeersFlow.value = if (ascending) {
+            originalBeers.sortedBy { it.abv }
+        } else {
+            originalBeers.sortedByDescending { it.abv }
+        }
     }
+
 
     fun filterByTName(nameFragment: String) {
         if (nameFragment.isEmpty()) {
-            getBeers()
-            return
-        }
-        BeersFlow.value =
-            BeersFlow.value.filter {
+            BeersFlow.value = originalBeers
+        } else {
+            BeersFlow.value = originalBeers.filter {
                 it.name.contains(nameFragment, ignoreCase = true)
             }
+        }
     }
 
+
+    fun filterByAbv(minAbv: Double) {
+        BeersFlow.value = originalBeers.filter {
+            it.abv <= minAbv
+        }
+
     }
+
+    fun filterByNameAndAbv(nameFragment: String, maxAbv: Double) {
+        BeersFlow.value = originalBeers.filter {
+            it.name.contains(nameFragment, ignoreCase = true) && it.abv <= maxAbv
+        }
+    }
+}

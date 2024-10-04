@@ -43,4 +43,11 @@ class BeerViewModel:ViewModel() {
     fun filterByName(titleFragment: String) {
         repository.filterByTName(titleFragment)
     }
+    fun filterByAbv(minAbv: Double) {
+        repository.filterByAbv(minAbv)
+    }
+    fun filterByNameAndAbv(nameFragment: String, maxAbv: Double) {
+        repository.filterByNameAndAbv(nameFragment, maxAbv)
+    }
+
 }

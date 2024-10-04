@@ -1,10 +1,13 @@
 package com.example.obopgave.Screen
 
 import android.content.res.Configuration
+import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -45,6 +48,7 @@ import com.example.obopgave.NavRouters
 import com.example.obopgave.ViewModel.Beer
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshState
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -60,10 +64,13 @@ fun BeerListScreen(
     sortByName: (up: Boolean) -> Unit = {},
     sortByAbv: (up: Boolean) -> Unit = {},
     filterByName: (String) -> Unit = {},
+    filterByAbv: (Double) -> Unit = {}, // 过滤 ABV
+    filterByNameAndAbv: (String, Double) -> Unit = { _, _ -> }, // 过滤名字和ABV
     onRefreshBeerList: () -> Unit = {} // Callback to refresh the beer list
 ) {
     var isRefreshing by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
 
     Scaffold(
         modifier = modifier,
@@ -86,104 +93,157 @@ fun BeerListScreen(
             }
         }
     ) { innerPadding ->
-        SwipeRefresh(
-            state = SwipeRefreshState(isRefreshing),
-            onRefresh = {
-                coroutineScope.launch {
-                    isRefreshing = true
-                    onRefreshBeerList() // Call to refresh the beer list
-                    delay(500) // Simulate a delay for refreshing
-                    isRefreshing = false
-                }
-            },
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            BeerListPanel(
-                beers = beers,
-                modifier = Modifier,
-                errorMessage = errorMessage,
-                onBeerSelected = onBeerSelected,
-                onBeerDeleted = onBeerDeleted,
-                sortByName = sortByName,
-                sortByAbv = sortByAbv,
-                onFilterByName = filterByName
-            )
+        Column(modifier = Modifier.padding(innerPadding)) {
+
+            SwipeRefresh(
+                state = swipeRefreshState,
+                onRefresh = {
+                    coroutineScope.launch {
+                        isRefreshing = true
+                        onRefreshBeerList() // Call to refresh the beer list
+                        delay(500) // Simulate a delay for refreshing
+                        isRefreshing = false
+                    }
+                },
+
+            ) {
+                BeerListPanel(
+                    beers = beers,
+                    modifier = Modifier,
+                    errorMessage = errorMessage,
+                    onBeerSelected = onBeerSelected,
+                    onBeerDeleted = onBeerDeleted,
+                    sortByName = sortByName,
+                    sortByAbv = sortByAbv,
+                    filterByName = filterByName,
+                    filterByAbv = filterByAbv,
+                    filterByNameAndAbv = filterByNameAndAbv,
+                    onRefreshBeerList = onRefreshBeerList
+                )
+            }
         }
     }
 }
 
+@Composable
+private fun BeerListPanel(
+    beers: List<Beer>,
+    modifier: Modifier = Modifier,
+    errorMessage: String,
+    onBeerSelected: (Beer) -> Unit,
+    onBeerDeleted: (Beer) -> Unit,
+    sortByName: (up: Boolean) -> Unit,
+    sortByAbv: (up: Boolean) -> Unit,
+    filterByName: (String) -> Unit,
+    filterByAbv: (Double) -> Unit ,
+    filterByNameAndAbv: (String, Double) -> Unit,
+    onRefreshBeerList: () -> Unit = {}
 
 
-    @Composable
-    private fun BeerListPanel(
-        beers: List<Beer>,
-        modifier: Modifier = Modifier,
-        errorMessage: String,
-        onBeerSelected: (Beer) -> Unit,
-        onBeerDeleted: (Beer) -> Unit,
+) {
+    var isFilterVisible by remember { mutableStateOf(false) }
+    var nameFilter by remember { mutableStateOf("") }
+    var abvFilter by remember { mutableStateOf("") }
+    var sortNameAscending by remember { mutableStateOf(true) }
+    var sortAbvAscending by remember { mutableStateOf(true) }
 
-        sortByName: (up: Boolean) -> Unit,
-        sortByAbv: (up: Boolean) -> Unit,
-        onFilterByName: (String) -> Unit,
+    Column(modifier = modifier) {
+        if (errorMessage.isNotEmpty()) {
+            Text(text = "Problem: $errorMessage")
+        }
 
-    ) {
-        Column(modifier = modifier) {
-            if (errorMessage.isNotEmpty()) {
-                Text(text = "Problem: $errorMessage")
-            }
-            val nameUp = "Name \u2191"
-            val nameDown = "Name \u2193"
-            val abvUp = "Abv \u2191"
-            val abvDown = "Abv \u2193"
-            var sortNameAscending by remember { mutableStateOf(true) }
-            var sortAbvAscending by remember { mutableStateOf(true) }
-            var NameFragment by remember { mutableStateOf("") }
 
-            Row {
-                OutlinedTextField(
-                    value = NameFragment,
-                    onValueChange = {NameFragment = it},
-                    label = { Text("Name") },
-                    modifier = Modifier.weight(1f)
-                )
-                Button(onClick = { onFilterByName(NameFragment) }) {
-                    Text("Filter")
-                }
-            }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
 
             Row {
                 OutlinedButton(onClick = {
                     sortByName(sortNameAscending)
                     sortNameAscending = !sortNameAscending
                 }) {
-                    Text(text = if (sortNameAscending) nameDown else nameUp)
+                    Text(text = if (sortNameAscending) "Sort Name \u2191" else "Sort Name \u2193")
                 }
-                TextButton(onClick = {
+
+                OutlinedButton(onClick = {
                     sortByAbv(sortAbvAscending)
                     sortAbvAscending = !sortAbvAscending
                 }) {
-                    Text(text = if (sortAbvAscending) abvDown else abvUp)
+                    Text(text = if (sortAbvAscending) "Sort ABV \u2191" else "Sort ABV \u2193")
                 }
             }
 
+            // 过滤器显示/隐藏按钮
+            TextButton(onClick = { isFilterVisible = !isFilterVisible }) {
+                Text(if (isFilterVisible) "Hide Filters" else "Show Filters")
+            }
+        }
 
-
-            val orientation = LocalConfiguration.current.orientation
-            val columns = if (orientation == Configuration.ORIENTATION_PORTRAIT) 1 else 2
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(columns),
-
+        // 使用 AnimatedVisibility 显示/隐藏过滤部分
+        AnimatedVisibility(visible = isFilterVisible) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
             ) {
-                items(beers) { beer ->
-                    BeerItem(
-                        beer,
-                        onBeerSelected = onBeerSelected,
-                        onBeerDeleted = onBeerDeleted
-                    )
+                // 过滤名字
+                OutlinedTextField(
+                    value = nameFilter,
+                    onValueChange = { nameFilter = it },
+                    label = { Text("Filter by Name") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // 过滤 ABV
+                OutlinedTextField(
+                    value = abvFilter,
+                    onValueChange = { abvFilter = it },
+                    label = { Text("Filter by ABV") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // 应用过滤按钮
+                Button(onClick = {
+                    val abvValue = abvFilter.toDoubleOrNull()
+                    when {
+                        nameFilter.isNotEmpty() && abvValue != null -> {
+                            filterByNameAndAbv(nameFilter, abvValue)
+                        }
+                        nameFilter.isNotEmpty() -> {
+                            filterByName(nameFilter)
+                        }
+                        abvValue != null -> {
+                            filterByAbv(abvValue)
+                        }
+                        else -> {
+                            onRefreshBeerList()
+                        }
+                    }
+                }) {
+                    Text("Apply Filter")
                 }
             }
         }
+
+        // 表格布局
+        val orientation = LocalConfiguration.current.orientation
+        val columns = if (orientation == Configuration.ORIENTATION_PORTRAIT) 1 else 2
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(columns)
+        ) {
+            items(beers) { beer ->
+                BeerItem(
+                    beer,
+                    onBeerSelected = onBeerSelected,
+                    onBeerDeleted = onBeerDeleted
+                )
+            }
+        }
     }
+}
 
     @Composable
     private fun BeerItem(
@@ -196,14 +256,20 @@ fun BeerListScreen(
             .padding(4.dp)
             .fillMaxSize(), onClick = { onBeerSelected(beer) }) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
                 Text(
-                    modifier = Modifier.padding(8.dp),
-                    text = beer.name + ": " +  beer.abv.toString()+"%"+ " "+ beer.user + " " + beer.brewery + " " + beer.style + " " + beer.volume.toString() + "L",
+                    text = "${beer.name}: ${beer.abv}% ${beer.user} ${beer.brewery} ${beer.style} ${beer.volume}L ${beer.howMany}x",
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp)
                 )
+
                 Icon(
                     imageVector = Icons.Filled.Delete,
                     contentDescription = "Remove",
@@ -214,7 +280,5 @@ fun BeerListScreen(
             }
         }
     }
-
-
 
 

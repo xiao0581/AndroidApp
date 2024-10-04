@@ -41,7 +41,7 @@ fun BeerDetails(
     var style by remember { mutableStateOf(Beer.style) }
     var volume by remember { mutableStateOf(Beer.volume.toString()) }
     var pictureUrl by remember { mutableStateOf(if (Beer.pictureUrl == null) "Noting " else Beer.pictureUrl) }
-    var howMany by remember { mutableStateOf(Beer.howMany) }
+    var howMany by remember { mutableStateOf(Beer.howMany.toString()) }
 
     Scaffold(modifier = modifier.fillMaxSize(), topBar = {
         TopAppBar(colors = TopAppBarDefaults.topAppBarColors(
@@ -52,43 +52,50 @@ fun BeerDetails(
 
         Column(modifier = modifier.padding(innerPadding)) {
 
-            OutlinedTextField(onValueChange = { name = it },
+            OutlinedTextField(
+                onValueChange = { name = it },
                 value = name,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(text = "Name") })
-            OutlinedTextField(onValueChange = { abv = it },
+            OutlinedTextField(
+                onValueChange = { abv = it },
                 value = abv,
-                // https://medium.com/@GkhKaya00/exploring-keyboard-types-in-kotlin-jetpack-compose-ca1f617e1109
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(text = "Abv") })
-            OutlinedTextField(onValueChange = { user = it },
+            OutlinedTextField(
+                onValueChange = { user = it },
                 value = user,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(text = "User") })
-            OutlinedTextField(onValueChange = { brewery = it },
+            OutlinedTextField(
+                onValueChange = { brewery = it },
                 value = brewery,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(text = "Brewery") })
-            OutlinedTextField(onValueChange = { style = it },
+            OutlinedTextField(
+                onValueChange = { style = it },
                 value = style,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(text = "Style") })
-            OutlinedTextField(onValueChange = { volume = it },
+            OutlinedTextField(
+                onValueChange = { volume = it },
                 value = volume,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(text = "Volume") })
-            OutlinedTextField(onValueChange = { pictureUrl = it },
+            OutlinedTextField(
+                onValueChange = { pictureUrl = it },
                 value = pictureUrl,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(text = "Picture URL") })
-            OutlinedTextField(onValueChange = { howMany = it.toInt() },
+            OutlinedTextField(
+                onValueChange = { howMany = it },
                 value = howMany.toString(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
@@ -108,9 +115,9 @@ fun BeerDetails(
                         user = user,
                         brewery = brewery,
                         style = style,
-                        volume = volume.toDouble(),
+                        volume = volume.toDoubleOrNull() ?: Beer.volume,
                         pictureUrl = pictureUrl,
-                        howMany = howMany
+                        howMany = howMany.toIntOrNull() ?: Beer.howMany
                     )
                     onUpdate(Beer.id, data)
                     onNavigateBack()

@@ -88,6 +88,10 @@ class MainActivity : ComponentActivity() {
                     sortByName = { viewModel.sortBooksByName(ascending = it) },
                     sortByAbv = { viewModel.sortBooksByAbv(ascending = it) },
                     filterByName = { viewModel.filterByName(it) }
+                    ,
+                    filterByAbv = { viewModel.filterByAbv(it) },
+                    filterByNameAndAbv = { name, abv -> viewModel.filterByNameAndAbv(name, abv) },
+                    onRefreshBeerList = { viewModel.reload() }
 
                 )
             }
