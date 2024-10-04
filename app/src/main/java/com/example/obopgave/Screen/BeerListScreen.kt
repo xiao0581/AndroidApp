@@ -29,10 +29,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,56 +43,74 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.obopgave.NavRouters
 import com.example.obopgave.ViewModel.Beer
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.SwipeRefreshState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BeerListScreen (
-        beers: List<Beer>,
-        errorMessage: String,
-        modifier: Modifier = Modifier,
-        onBeerSelected: (Beer) -> Unit = {},
-        onBeerDeleted: (Beer) -> Unit = {},
-        onAdd: () -> Unit = {},
-        sortByName: (up: Boolean) -> Unit = {},
-        sortByAbv: (up: Boolean) -> Unit = {},
-        filterByName: (String) -> Unit = {}
+fun BeerListScreen(
+    beers: List<Beer>,
+    errorMessage: String,
+    modifier: Modifier = Modifier,
+    onBeerSelected: (Beer) -> Unit = {},
+    onBeerDeleted: (Beer) -> Unit = {},
+    onAdd: () -> Unit = {},
+    sortByName: (up: Boolean) -> Unit = {},
+    sortByAbv: (up: Boolean) -> Unit = {},
+    filterByName: (String) -> Unit = {},
+    onRefreshBeerList: () -> Unit = {} // Callback to refresh the beer list
+) {
+    var isRefreshing by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
-    ) {
-        //val scaffoldState = rememberScaffoldState()
-        Scaffold(modifier = modifier,
-            topBar = {
-                TopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.primary,
-                    ),
-                    title = { Text("Beer list") })
-            },
-
-            floatingActionButtonPosition = FabPosition.EndOverlay,
-            floatingActionButton = {
-                FloatingActionButton(
-                    shape = CircleShape,
-                    onClick = { onAdd() },
-                ) {
-                    Icon(imageVector = Icons.Filled.Add, contentDescription = "Add")
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                ),
+                title = { Text("Beer list") }
+            )
+        },
+        floatingActionButtonPosition = FabPosition.End,
+        floatingActionButton = {
+            FloatingActionButton(
+                shape = CircleShape,
+                onClick = { onAdd() },
+            ) {
+                Icon(imageVector = Icons.Filled.Add, contentDescription = "Add")
+            }
+        }
+    ) { innerPadding ->
+        SwipeRefresh(
+            state = SwipeRefreshState(isRefreshing),
+            onRefresh = {
+                coroutineScope.launch {
+                    isRefreshing = true
+                    onRefreshBeerList() // Call to refresh the beer list
+                    delay(500) // Simulate a delay for refreshing
+                    isRefreshing = false
                 }
-            }) { innerPadding ->
+            },
+            modifier = Modifier.padding(innerPadding)
+        ) {
             BeerListPanel(
                 beers = beers,
-                modifier = Modifier.padding(innerPadding),
+                modifier = Modifier,
                 errorMessage = errorMessage,
                 onBeerSelected = onBeerSelected,
                 onBeerDeleted = onBeerDeleted,
                 sortByName = sortByName,
                 sortByAbv = sortByAbv,
                 onFilterByName = filterByName
-
-
             )
         }
     }
-
+}
 
 
 
@@ -152,7 +172,7 @@ fun BeerListScreen (
             val columns = if (orientation == Configuration.ORIENTATION_PORTRAIT) 1 else 2
             LazyVerticalGrid(
                 columns = GridCells.Fixed(columns),
-                //modifier = modifier.fillMaxSize()
+
             ) {
                 items(beers) { beer ->
                     BeerItem(
@@ -182,7 +202,7 @@ fun BeerListScreen (
             ) {
                 Text(
                     modifier = Modifier.padding(8.dp),
-                    text = beer.name + ": " +  beer.abv.toString()
+                    text = beer.name + ": " +  beer.abv.toString()+"%"+ " "+ beer.user + " " + beer.brewery + " " + beer.style + " " + beer.volume.toString() + "L",
                 )
                 Icon(
                     imageVector = Icons.Filled.Delete,

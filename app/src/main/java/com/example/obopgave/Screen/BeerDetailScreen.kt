@@ -1,4 +1,5 @@
 package com.example.obopgave.Screen
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,15 +36,19 @@ fun BeerDetails(
 ) {
     var name by remember { mutableStateOf(Beer.name) }
     var abv by remember { mutableStateOf(Beer.abv.toString()) }
-    Scaffold(modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                ),
-                title = { Text("Beer details") })
-        }) { innerPadding ->
+    var user by remember { mutableStateOf(Beer.user) }
+    var brewery by remember { mutableStateOf(Beer.brewery) }
+    var style by remember { mutableStateOf(Beer.style) }
+    var volume by remember { mutableStateOf(Beer.volume.toString()) }
+    var pictureUrl by remember { mutableStateOf(if (Beer.pictureUrl == null) "Noting " else Beer.pictureUrl) }
+    var howMany by remember { mutableStateOf(Beer.howMany) }
+
+    Scaffold(modifier = modifier.fillMaxSize(), topBar = {
+        TopAppBar(colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            titleContentColor = MaterialTheme.colorScheme.primary,
+        ), title = { Text("Beer details") })
+    }) { innerPadding ->
 
         Column(modifier = modifier.padding(innerPadding)) {
 
@@ -51,23 +56,62 @@ fun BeerDetails(
                 value = name,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text(text = "Title") })
+                label = { Text(text = "Name") })
             OutlinedTextField(onValueChange = { abv = it },
                 value = abv,
                 // https://medium.com/@GkhKaya00/exploring-keyboard-types-in-kotlin-jetpack-compose-ca1f617e1109
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text(text = "Price") })
+                label = { Text(text = "Abv") })
+            OutlinedTextField(onValueChange = { user = it },
+                value = user,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(text = "User") })
+            OutlinedTextField(onValueChange = { brewery = it },
+                value = brewery,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(text = "Brewery") })
+            OutlinedTextField(onValueChange = { style = it },
+                value = style,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(text = "Style") })
+            OutlinedTextField(onValueChange = { volume = it },
+                value = volume,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(text = "Volume") })
+            OutlinedTextField(onValueChange = { pictureUrl = it },
+                value = pictureUrl,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(text = "Picture URL") })
+            OutlinedTextField(onValueChange = { howMany = it.toInt() },
+                value = howMany.toString(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(text = "How many") })
+
             Row(
-                modifier = modifier.fillMaxSize(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                modifier = modifier.fillMaxSize(), horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 Button(onClick = { onNavigateBack() }) {
                     Text("Back")
                 }
                 Button(onClick = {
                     // TODO validation
-                    val data = Beer(name = name, abv = abv.toDouble())
+                    val data = Beer(
+                        name = name,
+                        abv = abv.toDouble(),
+                        user = user,
+                        brewery = brewery,
+                        style = style,
+                        volume = volume.toDouble(),
+                        pictureUrl = pictureUrl,
+                        howMany = howMany
+                    )
                     onUpdate(Beer.id, data)
                     onNavigateBack()
                 }) {
@@ -83,6 +127,6 @@ fun BeerDetails(
 @Composable
 fun BeerDetailsPreview() {
     BeerDetails(
-        Beer = Beer("name",1.2)
+        Beer = Beer("name", 1.2, "user", "brewery", "style", 0.5, "pictureUrl", 1)
     )
 }

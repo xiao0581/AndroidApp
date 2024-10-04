@@ -36,6 +36,12 @@ fun BeerAdd(
 ) {
     var name by remember { mutableStateOf("") }
     var abv by remember { mutableStateOf("") }
+    var user by remember { mutableStateOf("") }
+    var brewery by remember { mutableStateOf("") }
+    var style by remember { mutableStateOf("") }
+    var volume by remember { mutableStateOf("") }
+    var pictureUrl by remember { mutableStateOf("") }
+    var howMany by remember { mutableStateOf(0) }
     var nameIsError by remember { mutableStateOf(false) }
     var abvIsError by remember { mutableStateOf(false) }
     Scaffold(modifier = modifier.fillMaxSize(),
@@ -66,6 +72,36 @@ fun BeerAdd(
                     isError = abvIsError,
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(text = "Abv") })
+                OutlinedTextField(onValueChange = { user = it },
+                    value = user,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(text = "User") })
+                OutlinedTextField(onValueChange = { brewery = it },
+                    value = brewery,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(text = "Brewery") })
+                OutlinedTextField(onValueChange = { style = it },
+                    value = style,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(text = "Style") })
+                OutlinedTextField(onValueChange = { volume = it },
+                    value = volume,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(text = "Volume") })
+                OutlinedTextField(onValueChange = { pictureUrl = it },
+                    value = pictureUrl,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(text = "Picture URL") })
+                OutlinedTextField(onValueChange = { howMany = it.toInt() },
+                    value = howMany.toString(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(text = "How many") })
             } else {
                 Row(
                     modifier = modifier.fillMaxWidth(),
@@ -84,6 +120,37 @@ fun BeerAdd(
                         isError = abvIsError,
                         modifier = Modifier.weight(1f),
                         label = { Text(text = "Abv") })
+                    OutlinedTextField(onValueChange = { user = it },
+                        value = user,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        modifier = Modifier.weight(1f),
+                        label = { Text(text = "User") })
+                    OutlinedTextField(onValueChange = { brewery = it },
+                        value = brewery,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        modifier = Modifier.weight(1f),
+                        label = { Text(text = "Brewery") })
+                    OutlinedTextField(onValueChange = { style = it },
+                        value = style,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        modifier = Modifier.weight(1f),
+                        label = { Text(text = "Style") })
+                    OutlinedTextField(onValueChange = { volume = it },
+                        value = volume,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.weight(1f),
+                        label = { Text(text = "Volume") })
+                    OutlinedTextField(onValueChange = { pictureUrl = it },
+                        value = pictureUrl,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                        modifier = Modifier.weight(1f),
+                        label = { Text(text = "Picture URL") })
+                    OutlinedTextField(onValueChange = { howMany = it.toInt() },
+                        value = howMany.toString(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.weight(1f),
+                        label = { Text(text = "How many") })
+
                 }
             }
             Row(
@@ -102,12 +169,16 @@ fun BeerAdd(
                         abvIsError = true
                         return@Button
                     }
-                    val price = abv.toDoubleOrNull()
-                    if (price == null) {
+                    val abv = abv.toDoubleOrNull()
+                    if (abv == null) {
                         abvIsError = true
                         return@Button
                     }
-                    val Beer = Beer(name = name, abv = abv.toDouble())
+                    if (user==""||brewery==""||style==""||volume==""||pictureUrl==""||howMany==0){
+                        return@Button
+                    }
+
+                    val Beer = Beer(name = name, abv = abv, user = user, brewery = brewery, style = style, volume = volume.toDouble(), pictureUrl = pictureUrl, howMany = howMany)
                     addBeer(Beer)
                     navigateBack()
                 }) {

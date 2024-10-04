@@ -96,7 +96,7 @@ class MainActivity : ComponentActivity() {
                 arguments = listOf(navArgument("BeerId") { type = NavType.IntType })
             ) { backstackEntry ->
                 val BeerId = backstackEntry.arguments?.getInt("BeerId")
-                val Beer = beers.find { it.id == BeerId } ?: Beer("",0.0)
+                val Beer = beers.find { it.id == BeerId } ?: Beer( "", 0.0, "", "", "", 0.0, "", 0)
                 BeerDetails(modifier = modifier,
                     Beer = Beer,
                     onUpdate = { id: Int, Beer: Beer -> viewModel.update(id, Beer) },
