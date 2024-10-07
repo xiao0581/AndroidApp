@@ -50,7 +50,9 @@ import androidx.navigation.navArgument
 import com.example.obopgave.Screen.BeerAdd
 import com.example.obopgave.Screen.BeerDetails
 import com.example.obopgave.Screen.BeerListScreen
+import com.example.obopgave.Screen.LoginScreen
 import com.example.obopgave.Screen.UserbeerScreen
+import com.example.obopgave.ViewModel.AuthenticationViewModel
 import com.example.obopgave.ViewModel.Beer
 import com.example.obopgave.ViewModel.BeerViewModel
 import com.example.obopgave.ui.theme.ObopgaveTheme
@@ -72,8 +74,20 @@ class MainActivity : ComponentActivity() {
         val viewModel: BeerViewModel = viewModel() // persistence
         val beers = viewModel.BeersFlow.value
         val errorMessage = viewModel.errorMessageFlow.value
+        val authenticationViewModel: AuthenticationViewModel = viewModel()
 
-        NavHost(navController = navController, startDestination = NavRouters.BeerListScreen.route) {
+        NavHost(navController = navController, startDestination = NavRouters.LoginScreen.route) {
+            composable(NavRouters.LoginScreen.route) {
+                LoginScreen(
+                    modifier,
+                    user=authenticationViewModel.user,
+                    message = authenticationViewModel.message,
+                    signIn = { email, password -> authenticationViewModel.signIn(email, password) },
+                    register = { email, password -> authenticationViewModel.register(email, password) },
+                    navigateToWelcome = { navController.navigate(NavRouters.BeerListScreen.route) },
+
+                )
+            }
             composable(NavRouters.BeerListScreen.route) {
                 BeerListScreen(
                     beers = beers,
@@ -91,7 +105,12 @@ class MainActivity : ComponentActivity() {
                     ,
                     filterByAbv = { viewModel.filterByAbv(it) },
                     filterByNameAndAbv = { name, abv -> viewModel.filterByNameAndAbv(name, abv) },
-                    onRefreshBeerList = { viewModel.reload() }
+                    onRefreshBeerList = { viewModel.reload() },
+                    user = authenticationViewModel.user,
+                    signOut = { authenticationViewModel.signOut() },
+                    navigateToAuthentication = {
+                        navController.popBackStack(NavRouters.LoginScreen.route, inclusive = false)
+                    }
 
                 )
             }
@@ -111,6 +130,7 @@ class MainActivity : ComponentActivity() {
                     addBeer = { Beer -> viewModel.add(Beer) },
                     navigateBack = { navController.popBackStack() })
             }
+
         }
     }
 @Preview

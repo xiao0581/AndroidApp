@@ -124,6 +124,31 @@ class BeerRepository {
             }
         })
     }
+    fun getBeerByUser(user: String) {
+        isLoadingBeers.value = true
+        beerService.getBeerByUser(user).enqueue(object : Callback<List<Beer>> {
+            override fun onResponse(call: Call<List<Beer>>, response: Response<List<Beer>>) {
+                isLoadingBeers.value = false
+                if (response.isSuccessful) {
+                    val beerList: List<Beer>? = response.body()
+                    originalBeers = beerList ?: emptyList()
+                    BeersFlow.value = originalBeers
+                    errorMessageFlow.value = ""
+                } else {
+                    val message = response.code().toString() + " " + response.message()
+                    errorMessageFlow.value = message
+
+                }
+            }
+
+            override fun onFailure(call: Call<List<Beer>>, t: Throwable) {
+                isLoadingBeers.value = false
+                val message = t.message ?: "No connection to back-end"
+                errorMessageFlow.value = message
+
+            }
+        })
+    }
 
     // 使用原始数据进行排序
     fun sortBooksByName(ascending: Boolean) {

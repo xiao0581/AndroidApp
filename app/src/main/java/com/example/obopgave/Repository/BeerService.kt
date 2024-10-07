@@ -20,5 +20,6 @@ interface BeerService {
 
         @PUT("beers/{id}")
         fun updateBeers(@Path("id") id: Int, @Body Beer: Beer): Call<Beer>
-
+        @GET("beers/{user}")
+        fun getBeerByUser(@Path("user") user: String): Call<List<Beer>>
 }

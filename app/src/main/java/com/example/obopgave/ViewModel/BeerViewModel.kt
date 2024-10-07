@@ -3,6 +3,8 @@ package com.example.obopgave.ViewModel
 import androidx.lifecycle.ViewModel
 import com.example.obopgave.Repository.BeerRepository
 import androidx.compose.runtime.State
+import retrofit2.http.GET
+
 class BeerViewModel:ViewModel() {
     private val repository = BeerRepository()
     val BeersFlow: State<List<Beer>> = repository.BeersFlow
@@ -17,6 +19,9 @@ class BeerViewModel:ViewModel() {
 
     fun reload() {
         repository.getBeers()
+    }
+    fun GetBeerByUser(user: String) {
+        repository.getBeerByUser(user)
     }
 
     fun add(Beer: Beer) {

@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
@@ -24,6 +25,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -49,6 +51,7 @@ import com.example.obopgave.ViewModel.Beer
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -66,7 +69,10 @@ fun BeerListScreen(
     filterByName: (String) -> Unit = {},
     filterByAbv: (Double) -> Unit = {}, // 过滤 ABV
     filterByNameAndAbv: (String, Double) -> Unit = { _, _ -> }, // 过滤名字和ABV
-    onRefreshBeerList: () -> Unit = {} // Callback to refresh the beer list
+    onRefreshBeerList: () -> Unit = {},// Callback to refresh the beer list
+    user: FirebaseUser? = null,
+    signOut: () -> Unit = {},
+    navigateToAuthentication: () -> Unit = {}
 ) {
     var isRefreshing by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
@@ -80,7 +86,15 @@ fun BeerListScreen(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
-                title = { Text("Beer list") }
+                title = { Text("Beer list") },
+                        actions = {
+                    IconButton(onClick = { signOut() }) {
+                        Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Log out")
+                        if (user == null) {
+                            navigateToAuthentication()
+                        }
+                    }
+                }
             )
         },
         floatingActionButtonPosition = FabPosition.End,
