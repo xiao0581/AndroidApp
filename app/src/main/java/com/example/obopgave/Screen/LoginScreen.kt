@@ -75,22 +75,22 @@ fun LoginScreen(
     register: (email: String, password: String) -> Unit = { _, _ -> },
     navigateToWelcome: () -> Unit = {}
 ) {
+// blink løsning here
     var isLoading by remember { mutableStateOf(false) }
-
     if (user != null && !isLoading) {
         LaunchedEffect(Unit) {
             isLoading = true
             navigateToWelcome()
         }
     }
-    val emailStart = "xiao0581@edu.zealand.dk" // TODO remove starting email
-    val passwordStart = "123456" // TODO remove starting password
+    val emailStart = "xiao0581@edu.zealand.dk"
+    val passwordStart = "123456"
     var email by remember { mutableStateOf(emailStart) }
     var password by remember { mutableStateOf(passwordStart) }
     var emailIsError by remember { mutableStateOf(false) }
     var passwordIsError by remember { mutableStateOf(false) }
     var showPassword by remember { mutableStateOf(false) }
-    val green = Color(0xFF1EB960)
+    val green = Color(0xff8B8D7B)
     Scaffold(
         containerColor = green,
 
