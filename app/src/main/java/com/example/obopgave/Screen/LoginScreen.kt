@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -40,6 +42,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.AlignmentLine
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -57,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.Visibility
 import com.example.obopgave.NavRouters
+import com.example.obopgave.R
 import com.example.obopgave.ui.theme.ObopgaveTheme
 import com.google.firebase.auth.FirebaseUser
 
@@ -70,8 +75,13 @@ fun LoginScreen(
     register: (email: String, password: String) -> Unit = { _, _ -> },
     navigateToWelcome: () -> Unit = {}
 ) {
-    if (user != null) {
-        navigateToWelcome()
+    var isLoading by remember { mutableStateOf(false) }
+
+    if (user != null && !isLoading) {
+        LaunchedEffect(Unit) {
+            isLoading = true
+            navigateToWelcome()
+        }
     }
     val emailStart = "xiao0581@edu.zealand.dk" // TODO remove starting email
     val passwordStart = "123456" // TODO remove starting password
@@ -80,22 +90,21 @@ fun LoginScreen(
     var emailIsError by remember { mutableStateOf(false) }
     var passwordIsError by remember { mutableStateOf(false) }
     var showPassword by remember { mutableStateOf(false) }
-
+    val green = Color(0xFF1EB960)
     Scaffold(
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                ),
-                title = { Text("Authentication") }
-            )
-        }
+        containerColor = green,
+
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding).padding(16.dp).fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally) {
             // TODO layout for landscape: side by side
+            Image(
+               painter = painterResource(id = R.drawable.beer),
+                contentDescription = "Beer",
+                modifier = Modifier.size(150.dp).padding(bottom = 16.dp)
+            )
+
             Text( text = "Login" ,
                 fontSize = 24.sp,
                 color = Color.Gray,
@@ -190,49 +199,4 @@ fun PreviewAuthentication() {
         LoginScreen()
     }
 }
-@OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun LoginScreens(modifier: Modifier = Modifier) {
 
-        Column (modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally) {
-            Text( text = "Login" ,
-                fontSize = 24.sp, // 设置字体大小
-                color = Color.Gray, // 设置字体颜色
-                fontWeight = FontWeight.Bold
-            )
-
-            Column {
-                OutlinedTextField(value = "", onValueChange = { /*TODO*/ }, label = { Text("Username") },shape = RoundedCornerShape(10.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color.Green,
-                        unfocusedBorderColor = Color.Red
-                    ))
-                OutlinedTextField(value = "", onValueChange = { /*TODO*/ }, label = { Text("Password") },shape = RoundedCornerShape(10.dp)
-                )
-
-                Row {
-                    Spacer(modifier = Modifier.width(90.dp))
-                    Button(onClick = {
-                    }) {
-                        Text("Register")
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Button(onClick = {
-                    }) {
-                        Text("Login")
-                    }
-                }
-            }
-        }
-    }
-@Preview
-@Composable
-fun PreviewLoginScreen() {
-    ObopgaveTheme {
-        LoginScreens()
-    }
-}
